@@ -17,7 +17,6 @@ import { CustomerLogoCarousel } from './CustomerLogoCarousel';
 
 interface CustomersViewProps {
   onOpenConsultation: (topic?: string) => void;
-  onLaunchPlatform?: () => void;
   onSelectTab: (tab: string) => void;
 }
 

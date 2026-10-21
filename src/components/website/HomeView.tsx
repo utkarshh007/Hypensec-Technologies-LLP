@@ -23,13 +23,11 @@ import {
 interface HomeViewProps {
   onSelectTab: (tab: string) => void;
   onOpenConsultation: (interest?: string) => void;
-  onLaunchPlatform: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onSelectTab,
-  onOpenConsultation,
-  onLaunchPlatform
+  onOpenConsultation
 }) => {
   const [activeOfferingTab, setActiveOfferingTab] = useState<'services' | 'solutions'>('services');
   const [selectedPreviewFindingId, setSelectedPreviewFindingId] = useState<string>(INITIAL_FINDINGS[0].id);
@@ -95,11 +93,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <button
               type="button"
-              onClick={onLaunchPlatform}
+              onClick={() => onOpenConsultation('Comprehensive Security Consultation')}
               className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-blue-50/50 text-slate-800 border border-slate-300 hover:border-blue-300 font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-2xs"
             >
-              <span>Launch Interactive Platform Demo</span>
-              <ExternalLink className="w-4 h-4 text-blue-600" />
+              <span>Book a Security Consultation</span>
+              <ArrowRight className="w-4 h-4 text-blue-600" />
             </button>
           </div>
 
@@ -278,16 +276,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
               From Static Audit PDFs to a Living Risk Register
             </h2>
             <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-              Traditional security engagements end with a static spreadsheet. HypenSec pairs hands-on assessments with a continuous risk platform prototype that tracks external assets, correlates CVSS with business context, and guides engineering remediation.
+              Traditional security engagements end with a static spreadsheet. HypenSec pairs hands-on assessments with continuous risk prioritization that tracks external assets, correlates CVSS with business context, and guides engineering remediation.
             </p>
           </div>
           <button
             type="button"
-            onClick={onLaunchPlatform}
+            onClick={() => onOpenConsultation('Risk Prioritization & Exposure Triage Architecture')}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-2 whitespace-nowrap shadow-tri-sm self-start lg:self-auto"
           >
-            <span>Open Full Interactive Prototype</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Request Risk Advisory Scoping</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -455,11 +453,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
             <button
               type="button"
-              onClick={onLaunchPlatform}
+              onClick={() => onSelectTab('solutions')}
               className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-blue-50/50 text-slate-800 border border-slate-300 font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap"
             >
-              <span>Explore Platform Prototype</span>
-              <ExternalLink className="w-4 h-4 text-blue-600" />
+              <span>Explore Targeted Solutions</span>
+              <ArrowRight className="w-4 h-4 text-blue-600" />
             </button>
           </div>
         </div>

@@ -5,13 +5,11 @@ import { ExternalLink } from 'lucide-react';
 interface FooterProps {
   onSelectTab: (tab: string) => void;
   onOpenConsultation: () => void;
-  onLaunchPlatform: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   onSelectTab,
-  onOpenConsultation,
-  onLaunchPlatform
+  onOpenConsultation
 }) => {
   const [showDeploymentGuide, setShowDeploymentGuide] = React.useState(false);
   return (
@@ -25,7 +23,7 @@ export const Footer: React.FC<FooterProps> = ({
               HypenSec Technologies provides specialized cybersecurity services and continuous risk prioritization technology—helping organizations uncover real exposure and strengthen resilience.
             </p>
             <div className="pt-2 text-xs text-slate-500 space-y-1 font-mono">
-              <div>Inquiries: contact@hypensec.com</div>
+              <div>Inquiries: connect@hypensec.com</div>
               <div>Engagement Model: Mutual NDA · Remote & Global Delivery</div>
             </div>
           </div>
@@ -75,12 +73,6 @@ export const Footer: React.FC<FooterProps> = ({
               Platform & Solutions
             </h4>
             <ul className="space-y-2.5">
-              <li>
-                <button onClick={onLaunchPlatform} className="text-blue-600 hover:text-blue-700 font-semibold transition-colors text-left flex items-center gap-1">
-                  <span>Launch Interactive Demo</span>
-                  <ExternalLink className="w-3 h-3" />
-                </button>
-              </li>
               <li>
                 <button onClick={() => onSelectTab('platform')} className="hover:text-blue-600 transition-colors text-left">
                   Continuous Risk Platform
@@ -146,7 +138,7 @@ export const Footer: React.FC<FooterProps> = ({
               © {new Date().getFullYear()} HypenSec Technologies. All rights reserved.
             </p>
             <p className="text-[11px] text-slate-500">
-              Notice: The interactive platform prototype uses deterministic sample data for demonstration purposes.
+              Engagement Notice: Client engagement findings, testing artifacts, and vulnerabilities are handled under strict mutual non-disclosure.
             </p>
           </div>
           <div className="flex items-center gap-4 text-slate-500 text-[11px]">
@@ -186,7 +178,7 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              When transitioning this application from prototype to live production at <code className="text-blue-600 font-mono font-semibold">hypensec.com</code>, provide the following confirmed details to replace initial placeholders:
+              When deploying this application to live production at <code className="text-blue-600 font-mono font-semibold">hypensec.com</code>, provide the following confirmed details to replace initial placeholders:
             </p>
 
             <div className="space-y-3 text-xs">

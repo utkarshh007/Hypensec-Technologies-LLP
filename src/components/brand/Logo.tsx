@@ -32,19 +32,13 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <div className={`inline-flex items-center gap-2.5 select-none whitespace-nowrap shrink-0 ${className}`}>
       {/* Official HypenSec App Icon Logo */}
-      <div className={`${iconDimensions} shrink-0 rounded-md overflow-hidden bg-white flex items-center justify-center shadow-2xs border ${isWhite ? 'border-white/20' : 'border-slate-200/80'}`}>
-        <svg
-          viewBox="96 105 330 300"
-          className="w-full h-full"
-          role="img"
-          aria-label="HypenSec Technologies Logo"
-        >
-          <image
-            href="/assets/aistudio/hypensec-app-icon-white_2e1c931a.png"
-            width="512"
-            height="512"
-          />
-        </svg>
+      <div className={`${iconDimensions} shrink-0 flex items-center justify-center`}>
+        <img
+          src="/assets/aistudio/hypensec-icon-dark_bb1d633d.png"
+          alt="HypenSec Technologies"
+          className={`w-full h-full object-contain ${isWhite ? 'brightness-0 invert' : ''}`}
+          loading="eager"
+        />
       </div>
 
       {variant !== 'symbol' && (
@@ -63,4 +57,3 @@ export const Logo: React.FC<LogoProps> = ({
     </div>
   );
 };
-

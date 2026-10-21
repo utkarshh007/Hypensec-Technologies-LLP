@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, Send, ShieldCheck, Lock } from 'lucide-react';
+import { X, CheckCircle2, Send, ShieldCheck, Lock, Mail, ExternalLink, Copy, Check, ArrowRight } from 'lucide-react';
 import { Logo } from '../brand/Logo';
 
 interface ContactModalProps {
@@ -7,6 +7,8 @@ interface ContactModalProps {
   onClose: () => void;
   initialInterest?: string;
 }
+
+const ORGANIZATION_EMAIL = 'connect@hypensec.com';
 
 export const ContactModal: React.FC<ContactModalProps> = ({
   isOpen,
@@ -16,12 +18,25 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
+  const [phone, setPhone] = useState('');
   const [interest, setInterest] = useState(initialInterest);
   const [message, setMessage] = useState('');
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Store last submitted details for display & mail links
+  const [submittedData, setSubmittedData] = useState<{
+    name: string;
+    email: string;
+    company: string;
+    phone: string;
+    interest: string;
+    message: string;
+    timestamp: string;
+  } | null>(null);
 
   if (!isOpen) return null;
 
@@ -29,15 +44,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = 'Full name is required';
     if (!email.trim()) {
-      errs.email = 'Work email is required';
+      errs.email = 'Email address is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errs.email = 'Please provide a valid business email address';
-    } else {
-      const personalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com'];
-      const domain = email.split('@')[1]?.toLowerCase();
-      if (domain && personalDomains.includes(domain)) {
-        errs.email = 'Please use your corporate or organization work email address';
-      }
+      errs.email = 'Please provide a valid email address';
     }
 
     if (!company.trim()) errs.company = 'Company / organization name is required';
@@ -52,24 +61,156 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     return Object.keys(errs).length === 0;
   };
 
+  const generateEmailContent = (data: {
+    name: string;
+    email: string;
+    company: string;
+    phone: string;
+    interest: string;
+    message: string;
+  }) => {
+    const subject = `[Security Consultation Request] ${data.interest} - ${data.company} (${data.name})`;
+    const body = `Dear HypenSec Security Advisory Team,
+
+I would like to request a security consultation with HypenSec Technologies.
+
+==================================================
+CLIENT DETAILS:
+==================================================
+• Full Name: ${data.name}
+• Sender Email: ${data.email}
+• Company / Organization: ${data.company}
+${data.phone ? `• Phone / Contact: ${data.phone}\n` : ''}• Primary Area of Interest: ${data.interest}
+
+==================================================
+REQUIREMENTS & ENVIRONMENT OVERVIEW:
+==================================================
+${data.message}
+
+==================================================
+Target Recipient: ${ORGANIZATION_EMAIL}
+Request Dispatched via HypenSec Consultation Dispatcher
+`;
+    return { subject, body };
+  };
+
+  const triggerMailto = (data: {
+    name: string;
+    email: string;
+    company: string;
+    phone: string;
+    interest: string;
+    message: string;
+  }) => {
+    const { subject, body } = generateEmailContent(data);
+    const mailtoUrl = `mailto:${ORGANIZATION_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  };
+
+  const getGmailWebUrl = (data: {
+    name: string;
+    email: string;
+    company: string;
+    phone: string;
+    interest: string;
+    message: string;
+  }) => {
+    const { subject, body } = generateEmailContent(data);
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ORGANIZATION_EMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const getOutlookWebUrl = (data: {
+    name: string;
+    email: string;
+    company: string;
+    phone: string;
+    interest: string;
+    message: string;
+  }) => {
+    const { subject, body } = generateEmailContent(data);
+    return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(ORGANIZATION_EMAIL)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
+
+    const submission = {
+      name: name.trim(),
+      email: email.trim(),
+      company: company.trim(),
+      phone: phone.trim(),
+      interest,
+      message: message.trim(),
+      timestamp: new Date().toISOString(),
+    };
+
+    // Save to local storage for auditable record
+    try {
+      const existingHistory = JSON.parse(localStorage.getItem('hypensec_consultations') || '[]');
+      existingHistory.unshift({
+        ...submission,
+        recipient: ORGANIZATION_EMAIL,
+        id: `REQ-${Date.now()}`
+      });
+      localStorage.setItem('hypensec_consultations', JSON.stringify(existingHistory.slice(0, 20)));
+    } catch {
+      // LocalStorage error resilience
+    }
+
+    setSubmittedData(submission);
+
+    // Trigger user mail client with pre-filled content
+    try {
+      triggerMailto(submission);
+    } catch {
+      // Fallback handled smoothly
+    }
+
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-      setName('');
-      setEmail('');
-      setCompany('');
-      setMessage('');
-    }, 700);
+    }, 400);
+  };
+
+  const handleCopyDetails = () => {
+    if (!submittedData) return;
+    const { subject, body } = generateEmailContent(submittedData);
+    const fullText = `To: ${ORGANIZATION_EMAIL}\nSubject: ${subject}\n\n${body}`;
+
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = fullText;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    } catch {
+      // Non-blocking fallback
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleResetForm = () => {
+    setName('');
+    setEmail('');
+    setCompany('');
+    setPhone('');
+    setMessage('');
+    setSubmittedData(null);
+    setIsSubmitted(false);
+    setErrors({});
   };
 
   const handleResetAndClose = () => {
-    setIsSubmitted(false);
-    setErrors({});
+    handleResetForm();
     onClose();
   };
 
@@ -78,9 +219,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="consultation-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
     >
-      <div className="relative w-full max-w-xl bg-white border border-slate-200/90 rounded-2xl shadow-tri-lg p-6 md:p-8 text-slate-900 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-white border border-slate-200/90 rounded-2xl shadow-2xl p-6 md:p-8 text-slate-900 max-h-[92vh] overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={handleResetAndClose}
@@ -90,34 +231,156 @@ export const ContactModal: React.FC<ContactModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        {isSubmitted ? (
-          <div className="text-center py-8">
-            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200">
-              <CheckCircle className="w-8 h-8" />
+        {isSubmitted && submittedData ? (
+          <div className="py-2">
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-200 shadow-xs">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h3 id="consultation-modal-title" className="text-2xl font-bold text-slate-900">
+                Consultation Request Prepared
+              </h3>
+              <p className="text-slate-600 text-sm mt-1 max-w-md mx-auto">
+                Your consultation request has been prepared for dispatch to our organization inbox.
+              </p>
             </div>
-            <h3 id="consultation-modal-title" className="text-2xl font-bold text-slate-900 mb-2">
-              Consultation Request Received
-            </h3>
-            <p className="text-slate-600 text-sm leading-relaxed max-w-md mx-auto mb-6">
-              Thank you for reaching out to HypenSec Technologies. A security advisor will review your requirements under confidentiality and get in touch within one business day.
-            </p>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-xs text-slate-600 text-left mb-6">
+
+            {/* Target Mail Indicator */}
+            <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-3.5 mb-5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-semibold text-blue-900 uppercase tracking-wider font-mono">
+                    Official Organization Inbox
+                  </div>
+                  <div className="text-sm font-bold text-blue-700 font-mono">
+                    {ORGANIZATION_EMAIL}
+                  </div>
+                </div>
+              </div>
+              <span className="text-[11px] font-mono px-2.5 py-1 bg-white border border-blue-200 text-blue-800 rounded-md font-semibold">
+                Direct Recipient
+              </span>
+            </div>
+
+            {/* Summary Details */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2.5 mb-5">
+              <div className="text-slate-900 font-bold text-xs uppercase tracking-wider font-mono border-b border-slate-200 pb-2">
+                Submission Summary
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-slate-600">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-mono">From / Contact</span>
+                  <span className="font-semibold text-slate-800">{submittedData.name}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-mono">Sender Email</span>
+                  <span className="font-semibold text-slate-800 truncate block">{submittedData.email}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-mono">Organization</span>
+                  <span className="font-semibold text-slate-800">{submittedData.company}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-mono">Focus Area</span>
+                  <span className="font-semibold text-slate-800 truncate block">{submittedData.interest}</span>
+                </div>
+              </div>
+              <div className="pt-1 border-t border-slate-200/80">
+                <span className="text-slate-400 block text-[10px] uppercase font-mono">Objective / Scope</span>
+                <p className="text-slate-700 italic mt-0.5 line-clamp-2">
+                  &ldquo;{submittedData.message}&rdquo;
+                </p>
+              </div>
+            </div>
+
+            {/* Mail Dispatch Quick Actions */}
+            <div className="space-y-2 mb-6">
+              <div className="text-xs font-semibold text-slate-700">
+                Send directly from your preferred email provider:
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Default Mail Client */}
+                <button
+                  onClick={() => triggerMailto(submittedData)}
+                  className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors shadow-xs"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Open in Mail App</span>
+                </button>
+
+                {/* Gmail Web */}
+                <a
+                  href={getGmailWebUrl(submittedData)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium transition-colors border border-slate-300"
+                >
+                  <span>Open in Gmail Web</span>
+                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                </a>
+
+                {/* Outlook Web */}
+                <a
+                  href={getOutlookWebUrl(submittedData)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium transition-colors border border-slate-300"
+                >
+                  <span>Open in Outlook Web</span>
+                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                </a>
+
+                {/* Copy Text */}
+                <button
+                  onClick={handleCopyDetails}
+                  className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium transition-colors border border-slate-300"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700 font-semibold">Copied to Clipboard!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Copy Email Content</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Engagement Next Steps */}
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 text-xs text-slate-600 mb-6">
               <div className="flex items-center gap-2 text-slate-900 font-bold mb-1">
                 <ShieldCheck className="w-4 h-4 text-blue-600" />
                 <span>Next Steps in Our Engagement Process:</span>
               </div>
-              <ul className="list-disc list-inside space-y-1 text-slate-600 mt-2">
-                <li>Non-Disclosure Agreement (NDA) mutual execution if required.</li>
-                <li>Initial 30-minute scoping discussion on scope and asset targets.</li>
-                <li>Customized proposal with explicit methodology and timelines.</li>
+              <ul className="list-disc list-inside space-y-0.5 text-slate-600 mt-1">
+                <li>Advisory team review at <strong className="text-slate-800">connect@hypensec.com</strong> within 1 business day.</li>
+                <li>Mutual Non-Disclosure Agreement (NDA) execution prior to sharing sensitive architectures.</li>
+                <li>Scoping session with lead security engineer.</li>
               </ul>
             </div>
-            <button
-              onClick={handleResetAndClose}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors whitespace-nowrap"
-            >
-              Return to Website
-            </button>
+
+            <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={handleResetForm}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              >
+                ← Submit another request
+              </button>
+              <button
+                onClick={handleResetAndClose}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-lg transition-colors"
+              >
+                Done
+              </button>
+            </div>
           </div>
         ) : (
           <div>
@@ -130,8 +393,21 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 Book a Security Consultation
               </h2>
               <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                Connect directly with a technical security specialist to evaluate your attack surface, assess vulnerabilities, or prepare for upcoming compliance reviews.
+                Connect directly with our security engineers. Your consultation request will be dispatched directly to <strong className="text-slate-900 font-medium font-mono">{ORGANIZATION_EMAIL}</strong> from your mail.
               </p>
+            </div>
+
+            {/* Email Dispatch Notice */}
+            <div className="bg-slate-50 border border-slate-200/90 rounded-lg px-3.5 py-2.5 mb-4 flex items-center justify-between text-xs text-slate-600">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>
+                  Delivers to official address: <span className="font-mono font-semibold text-slate-900">{ORGANIZATION_EMAIL}</span>
+                </span>
+              </div>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 bg-blue-100/70 text-blue-800 font-semibold rounded">
+                Verified
+              </span>
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -156,11 +432,11 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 {errors.name && <p className="text-xs text-rose-600 mt-1">{errors.name}</p>}
               </div>
 
-              {/* Work Email & Company in 2-col */}
+              {/* Email & Company in 2-col */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="contact-email" className="block text-xs font-semibold text-slate-700 mb-1">
-                    Work Email <span className="text-rose-600">*</span>
+                    Your Email Address <span className="text-rose-600">*</span>
                   </label>
                   <input
                     id="contact-email"
@@ -199,39 +475,55 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 </div>
               </div>
 
-              {/* Area of Interest */}
-              <div>
-                <label htmlFor="contact-interest" className="block text-xs font-semibold text-slate-700 mb-1">
-                  Primary Area of Interest <span className="text-rose-600">*</span>
-                </label>
-                <select
-                  id="contact-interest"
-                  value={interest}
-                  onChange={(e) => setInterest(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 hover:border-slate-400 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors"
-                >
-                  <option value="Vulnerability Assessment and Penetration Testing">
-                    Vulnerability Assessment and Penetration Testing (VAPT)
-                  </option>
-                  <option value="Cloud and Application Security">
-                    Cloud and Application Security Engineering
-                  </option>
-                  <option value="External Attack Surface & Threat Monitoring">
-                    External Attack Surface & Threat Monitoring
-                  </option>
-                  <option value="Security Operations & Incident Readiness">
-                    Security Operations & Incident Readiness (Tabletop / Playbooks)
-                  </option>
-                  <option value="Governance, Risk and Compliance (SOC 2, ISO 27001)">
-                    Governance, Risk and Compliance (SOC 2, ISO 27001, NIST CSF)
-                  </option>
-                  <option value="Security Consulting and Virtual CISO Advisory">
-                    Strategic Security Consulting / Virtual CISO Advisory
-                  </option>
-                  <option value="SaaS Platform Prototype Demonstration">
-                    HypenSec Risk Platform Prototype Access
-                  </option>
-                </select>
+              {/* Phone & Area of Interest */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="contact-phone" className="block text-xs font-semibold text-slate-700 mb-1">
+                    Phone / WhatsApp <span className="text-slate-400 font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    id="contact-phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+1 (555) 019-2834"
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-300 hover:border-slate-400 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="contact-interest" className="block text-xs font-semibold text-slate-700 mb-1">
+                    Primary Area of Interest <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    id="contact-interest"
+                    value={interest}
+                    onChange={(e) => setInterest(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-300 hover:border-slate-400 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors"
+                  >
+                    <option value="Vulnerability Assessment and Penetration Testing">
+                      Vulnerability Assessment and Penetration Testing (VAPT)
+                    </option>
+                    <option value="Cloud and Application Security">
+                      Cloud and Application Security Engineering
+                    </option>
+                    <option value="External Attack Surface & Threat Monitoring">
+                      External Attack Surface & Threat Monitoring
+                    </option>
+                    <option value="Security Operations & Incident Readiness">
+                      Security Operations & Incident Readiness (Tabletop / Playbooks)
+                    </option>
+                    <option value="Governance, Risk and Compliance (SOC 2, ISO 27001)">
+                      Governance, Risk and Compliance (SOC 2, ISO 27001, NIST CSF)
+                    </option>
+                    <option value="Security Consulting and Virtual CISO Advisory">
+                      Strategic Security Consulting / Virtual CISO Advisory
+                    </option>
+                    <option value="Next-Gen Security & Resilience Product Suite">
+                      Next-Gen Security & Resilience Product Suite (Trever, Webby, AXR, Zproxi, Moana)
+                    </option>
+                  </select>
+                </div>
               </div>
 
               {/* Message */}
@@ -258,7 +550,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               {/* Privacy notice */}
               <div className="flex items-center gap-2 text-xs text-slate-500 pt-1">
                 <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>Information submitted is strictly confidential and protected by standard professional privacy practices.</span>
+                <span>Information submitted is strictly confidential and protected under standard professional privacy practices.</span>
               </div>
 
               {/* Submit CTA */}
@@ -266,17 +558,20 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
+                  className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium text-sm rounded-lg transition-colors shadow-md group cursor-pointer"
                 >
                   {isSubmitting ? (
-                    <span>Validating & Sending Request...</span>
+                    <span>Preparing & Opening Mail Client...</span>
                   ) : (
                     <>
-                      <span>Send Consultation Request</span>
-                      <Send className="w-4 h-4" />
+                      <span>Submit Request via Email to {ORGANIZATION_EMAIL}</span>
+                      <Send className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                     </>
                   )}
                 </button>
+                <p className="text-[11px] text-slate-500 text-center mt-2">
+                  Submits from your mail directly to our organization inbox at <span className="font-mono text-slate-700 font-semibold">{ORGANIZATION_EMAIL}</span>
+                </p>
               </div>
             </form>
           </div>

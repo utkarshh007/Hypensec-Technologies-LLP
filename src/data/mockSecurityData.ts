@@ -574,7 +574,7 @@ export const COMPANY_VERIFICATION_PLACEHOLDERS = {
   foundedYear: '[Year - Confirmed during client onboarding]',
   certificationsNotice: 'HypenSec operates to industry testing standards (PTES, OWASP, NIST). Specific formal accreditations will be provided directly in client engagement proposals upon verified scope agreement.',
   clientReferencesNotice: 'Client logos, case studies, and reference contacts are available upon mutual NDA execution to respect organizational security confidentiality.',
-  contactEmail: 'contact@hypensec.com',
+  contactEmail: 'connect@hypensec.com',
   inquiryHours: 'Monday – Friday, Standard Business Operations (US & International Timezones)'
 };
 

@@ -21,7 +21,6 @@ import { ProductSuiteId } from './Navbar';
 interface PlatformViewProps {
   selectedProductId?: ProductSuiteId;
   onSelectProduct?: (id: ProductSuiteId) => void;
-  onLaunchPlatform: () => void;
   onOpenConsultation: (topic?: string) => void;
 }
 
@@ -169,7 +168,6 @@ const PRODUCT_SUITE_ITEMS: ProductSuiteDetail[] = [
 export const PlatformView: React.FC<PlatformViewProps> = ({
   selectedProductId = 'trever-ttx',
   onSelectProduct,
-  onLaunchPlatform,
   onOpenConsultation
 }) => {
   const [activeProductId, setActiveProductId] = useState<ProductSuiteId>(selectedProductId);
@@ -241,11 +239,11 @@ export const PlatformView: React.FC<PlatformViewProps> = ({
         </div>
 
         <button
-          onClick={onLaunchPlatform}
+          onClick={() => onOpenConsultation('Product Suite Architecture & Evaluation')}
           className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-all flex items-center gap-2 whitespace-nowrap shadow-tri-md shrink-0"
         >
-          <span>Launch Interactive Prototype</span>
-          <ExternalLink className="w-4 h-4" />
+          <span>Schedule Product Briefing</span>
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
@@ -321,10 +319,10 @@ export const PlatformView: React.FC<PlatformViewProps> = ({
               </button>
               <button
                 type="button"
-                onClick={onLaunchPlatform}
+                onClick={() => onOpenConsultation(`${activeProduct.name} Technical Specifications & Architecture`)}
                 className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-mono rounded-lg transition-all"
               >
-                Open Live Sandbox
+                Architecture Specs
               </button>
             </div>
           </div>
@@ -630,13 +628,13 @@ export const PlatformView: React.FC<PlatformViewProps> = ({
         {/* Footer Bar inside preview */}
         <div className="bg-white px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-slate-600">
-            Explore all asset drilldowns, status changes, and filter controls in the full interactive prototype.
+            Need customized deployment specifications or technical scoping across these asset categories?
           </p>
           <button
-            onClick={onLaunchPlatform}
+            onClick={() => onOpenConsultation('Technical Architecture & Scoping Review')}
             className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
           >
-            <span>Launch Full Interactive Prototype</span>
+            <span>Request Technical Consultation</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Navbar, ProductSuiteId, SolutionCategoryId, ServiceCategoryId } from './components/website/Navbar';
 import { Footer } from './components/website/Footer';
 import { HomeView } from './components/website/HomeView';
@@ -8,10 +8,8 @@ import { PlatformView } from './components/website/PlatformView';
 import { ResourcesView } from './components/website/ResourcesView';
 import { AboutView } from './components/website/AboutView';
 import { ContactModal } from './components/website/ContactModal';
-import { DashboardLayout } from './components/dashboard/DashboardLayout';
 
 export default function App() {
-  const [viewMode, setViewMode] = useState<'website' | 'dashboard'>('website');
   const [websiteTab, setWebsiteTab] = useState<string>('home');
   const [selectedProductId, setSelectedProductId] = useState<ProductSuiteId>('trever-ttx');
   const [selectedSolutionCategoryId, setSelectedSolutionCategoryId] = useState<SolutionCategoryId>('security-management');
@@ -22,16 +20,6 @@ export default function App() {
   const handleOpenConsultation = (interest?: string) => {
     if (interest) setConsultationInterest(interest);
     setIsConsultationOpen(true);
-  };
-
-  const handleLaunchPlatform = () => {
-    setViewMode('dashboard');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleExitToWebsite = () => {
-    setViewMode('website');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectTab = (
@@ -54,17 +42,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // If viewing the SaaS Product Prototype:
-  if (viewMode === 'dashboard') {
-    return (
-      <DashboardLayout
-        onExitToWebsite={handleExitToWebsite}
-        onOpenConsultation={() => handleOpenConsultation('SaaS Platform Enterprise Deployment')}
-      />
-    );
-  }
-
-  // Website View:
   return (
     <div className="min-h-screen theme-aura-canvas text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white relative overflow-x-hidden">
       {/* Top 3-Zone Executive Header */}
@@ -72,7 +49,6 @@ export default function App() {
         currentTab={websiteTab}
         onSelectTab={handleSelectTab}
         onOpenConsultation={(interest) => handleOpenConsultation(interest)}
-        onLaunchPlatform={handleLaunchPlatform}
       />
 
       {/* Main Content Area */}
@@ -81,7 +57,6 @@ export default function App() {
           <HomeView
             onSelectTab={handleSelectTab}
             onOpenConsultation={(interest) => handleOpenConsultation(interest)}
-            onLaunchPlatform={handleLaunchPlatform}
           />
         )}
 
@@ -105,8 +80,7 @@ export default function App() {
           <PlatformView
             selectedProductId={selectedProductId}
             onSelectProduct={setSelectedProductId}
-            onLaunchPlatform={handleLaunchPlatform}
-            onOpenConsultation={(topic) => handleOpenConsultation(topic || 'Platform Demo Scoping')}
+            onOpenConsultation={(topic) => handleOpenConsultation(topic || 'Product Suite Architecture')}
           />
         )}
 
@@ -127,7 +101,6 @@ export default function App() {
       <Footer
         onSelectTab={handleSelectTab}
         onOpenConsultation={() => handleOpenConsultation()}
-        onLaunchPlatform={handleLaunchPlatform}
       />
 
       {/* Contact & Consultation Dialog */}
