@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Google Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Google Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #1f1f1f;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Blue Atmospheric Shadow & Architectural Grid Background */
+.theme-aura-canvas {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(59, 130, 246, 0.12) 0%, transparent 42%),
+    radial-gradient(circle at 88% 14%, rgba(37, 99, 235, 0.10) 0%, transparent 46%),
+    radial-gradient(circle at 52% 52%, rgba(6, 182, 212, 0.07) 0%, transparent 55%),
+    radial-gradient(circle at 18% 88%, rgba(59, 130, 246, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(37, 99, 235, 0.10) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Soft Blue Surface Wash for Callouts & Showcases */
+.surface-tri-wash {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(239, 246, 255, 0.9) 55%,
+    rgba(240, 249, 255, 0.92) 100%
+  );
+}
+
+/* Blue Ambient Shadow Utilities */
+.shadow-tri-sm {
+  box-shadow:
+    0 4px 16px -4px rgba(59, 130, 246, 0.10),
+    0 2px 6px -1px rgba(37, 99, 235, 0.06);
+}
+
+.shadow-tri-md {
+  box-shadow:
+    0 12px 32px -8px rgba(59, 130, 246, 0.14),
+    0 6px 16px -4px rgba(37, 99, 235, 0.08);
+}
+
+.shadow-tri-lg {
+  box-shadow:
+    0 20px 48px -12px rgba(59, 130, 246, 0.16),
+    0 12px 28px -8px rgba(37, 99, 235, 0.10);
+}
+
+.shadow-tri-hover {
+  transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.shadow-tri-hover:hover {
+  box-shadow:
+    0 16px 36px -8px rgba(59, 130, 246, 0.18),
+    0 8px 20px -4px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Custom scrollbars for data tables and logs */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth infinite customer logo carousel marquee */
+@keyframes customer-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-customer-marquee {
+  display: flex;
+  width: max-content;
+  animation: customer-marquee 34s linear infinite;
+  will-change: transform;
+}
+
+.animate-customer-marquee:hover,
+.animate-customer-marquee.is-paused {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-customer-marquee {
+    animation: none;
+  }
+}
+

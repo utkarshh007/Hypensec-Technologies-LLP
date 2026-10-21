@@ -1,0 +1,6 @@
+{
+  "name": "HypenSec Technologies - Cybersecurity Services & SaaS Platform",
+  "description": "HypenSec Technologies provides cybersecurity services and a risk-prioritization SaaS platform to discover assets, assess risks, and streamline remediation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
