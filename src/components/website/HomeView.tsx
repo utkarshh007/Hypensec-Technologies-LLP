@@ -462,6 +462,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
       </section>
+
     </div>
   );
 };

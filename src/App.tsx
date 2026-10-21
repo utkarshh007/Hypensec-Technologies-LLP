@@ -8,6 +8,7 @@ import { PlatformView } from './components/website/PlatformView';
 import { ResourcesView } from './components/website/ResourcesView';
 import { AboutView } from './components/website/AboutView';
 import { ContactModal } from './components/website/ContactModal';
+import { CookieConsent } from './components/website/CookieConsent';
 
 export default function App() {
   const [websiteTab, setWebsiteTab] = useState<string>('home');
@@ -16,6 +17,7 @@ export default function App() {
   const [selectedServiceId, setSelectedServiceId] = useState<ServiceCategoryId>('vapt');
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
   const [consultationInterest, setConsultationInterest] = useState<string>('Vulnerability Assessment and Penetration Testing');
+  const [forceCookieConsent, setForceCookieConsent] = useState(false);
 
   const handleOpenConsultation = (interest?: string) => {
     if (interest) setConsultationInterest(interest);
@@ -101,6 +103,7 @@ export default function App() {
       <Footer
         onSelectTab={handleSelectTab}
         onOpenConsultation={() => handleOpenConsultation()}
+        onOpenCookieConsent={() => setForceCookieConsent(true)}
       />
 
       {/* Contact & Consultation Dialog */}
@@ -108,6 +111,12 @@ export default function App() {
         isOpen={isConsultationOpen}
         onClose={() => setIsConsultationOpen(false)}
         initialInterest={consultationInterest}
+      />
+
+      {/* Cookie Consent Banner */}
+      <CookieConsent
+        forceOpen={forceCookieConsent}
+        onCloseForce={() => setForceCookieConsent(false)}
       />
     </div>
   );

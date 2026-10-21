@@ -5,11 +5,13 @@ import { ExternalLink } from 'lucide-react';
 interface FooterProps {
   onSelectTab: (tab: string) => void;
   onOpenConsultation: () => void;
+  onOpenCookieConsent?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   onSelectTab,
-  onOpenConsultation
+  onOpenConsultation,
+  onOpenCookieConsent
 }) => {
   const [showDeploymentGuide, setShowDeploymentGuide] = React.useState(false);
   return (
@@ -141,7 +143,19 @@ export const Footer: React.FC<FooterProps> = ({
               Engagement Notice: Client engagement findings, testing artifacts, and vulnerabilities are handled under strict mutual non-disclosure.
             </p>
           </div>
-          <div className="flex items-center gap-4 text-slate-500 text-[11px]">
+          <div className="flex flex-wrap items-center gap-4 text-slate-500 text-[11px]">
+            {onOpenCookieConsent && (
+              <>
+                <button
+                  type="button"
+                  onClick={onOpenCookieConsent}
+                  className="text-slate-600 hover:text-blue-600 font-mono font-medium transition-colors"
+                >
+                  Cookie Preferences
+                </button>
+                <span aria-hidden="true">·</span>
+              </>
+            )}
             <button
               onClick={() => setShowDeploymentGuide(true)}
               className="text-blue-600 hover:text-blue-700 font-mono font-medium transition-colors underline underline-offset-2"
