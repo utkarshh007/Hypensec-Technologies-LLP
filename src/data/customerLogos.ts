@@ -152,3 +152,6 @@ export function buildMarqueeTrack<T>(items: readonly T[], copies = 2): T[] {
   }
   return result;
 }
+
+export const CUSTOMER_CAROUSEL_TITLE = 'Trusted by 100+ cybersecurity teams using HypenSec solutions';
+

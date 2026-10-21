@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {
   CUSTOMER_LOGOS,
   getNextCarouselIndex,
-  buildMarqueeTrack
+  buildMarqueeTrack,
+  CUSTOMER_CAROUSEL_TITLE
 } from './customerLogos';
 
 test('CUSTOMER_LOGOS contains all 11 logos with valid local asset paths', () => {
@@ -43,3 +44,11 @@ test('buildMarqueeTrack duplicates items for continuous marquee loop', () => {
   assert.equal(track[0].id, CUSTOMER_LOGOS[0].id);
   assert.equal(track[11].id, CUSTOMER_LOGOS[0].id);
 });
+
+test('CUSTOMER_CAROUSEL_TITLE matches user specification', () => {
+  assert.equal(
+    CUSTOMER_CAROUSEL_TITLE,
+    'Trusted by 100+ cybersecurity teams using HypenSec solutions'
+  );
+});
+

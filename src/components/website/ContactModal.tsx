@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, Send, ShieldCheck, Lock, Mail, ExternalLink, Copy, Check, ArrowRight } from 'lucide-react';
 import { Logo } from '../brand/Logo';
+import {
+  ORGANIZATION_EMAIL,
+  validateConsultationForm,
+  generateEmailContent,
+  getMailtoUrl,
+  getGmailWebUrl,
+  getOutlookWebUrl,
+  ConsultationFormData
+} from '../../utils/consultation';
 
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialInterest?: string;
 }
-
-const ORGANIZATION_EMAIL = 'connect@hypensec.com';
 
 export const ContactModal: React.FC<ContactModalProps> = ({
   isOpen,
@@ -28,112 +35,25 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const [copied, setCopied] = useState(false);
 
   // Store last submitted details for display & mail links
-  const [submittedData, setSubmittedData] = useState<{
-    name: string;
-    email: string;
-    company: string;
-    phone: string;
-    interest: string;
-    message: string;
-    timestamp: string;
-  } | null>(null);
+  const [submittedData, setSubmittedData] = useState<(ConsultationFormData & { timestamp: string }) | null>(null);
 
   if (!isOpen) return null;
 
-  const validate = () => {
-    const errs: Record<string, string> = {};
-    if (!name.trim()) errs.name = 'Full name is required';
-    if (!email.trim()) {
-      errs.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errs.email = 'Please provide a valid email address';
-    }
-
-    if (!company.trim()) errs.company = 'Company / organization name is required';
-    if (!interest) errs.interest = 'Please select a primary area of interest';
-    if (!message.trim()) {
-      errs.message = 'Please provide a brief description of your environment or objective';
-    } else if (message.trim().length < 15) {
-      errs.message = 'Please share at least 15 characters describing your requirements';
-    }
-
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const generateEmailContent = (data: {
-    name: string;
-    email: string;
-    company: string;
-    phone: string;
-    interest: string;
-    message: string;
-  }) => {
-    const subject = `[Security Consultation Request] ${data.interest} - ${data.company} (${data.name})`;
-    const body = `Dear HypenSec Security Advisory Team,
-
-I would like to request a security consultation with HypenSec Technologies.
-
-==================================================
-CLIENT DETAILS:
-==================================================
-• Full Name: ${data.name}
-• Sender Email: ${data.email}
-• Company / Organization: ${data.company}
-${data.phone ? `• Phone / Contact: ${data.phone}\n` : ''}• Primary Area of Interest: ${data.interest}
-
-==================================================
-REQUIREMENTS & ENVIRONMENT OVERVIEW:
-==================================================
-${data.message}
-
-==================================================
-Target Recipient: ${ORGANIZATION_EMAIL}
-Request Dispatched via HypenSec Consultation Dispatcher
-`;
-    return { subject, body };
-  };
-
-  const triggerMailto = (data: {
-    name: string;
-    email: string;
-    company: string;
-    phone: string;
-    interest: string;
-    message: string;
-  }) => {
-    const { subject, body } = generateEmailContent(data);
-    const mailtoUrl = `mailto:${ORGANIZATION_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoUrl;
-  };
-
-  const getGmailWebUrl = (data: {
-    name: string;
-    email: string;
-    company: string;
-    phone: string;
-    interest: string;
-    message: string;
-  }) => {
-    const { subject, body } = generateEmailContent(data);
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ORGANIZATION_EMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
-  const getOutlookWebUrl = (data: {
-    name: string;
-    email: string;
-    company: string;
-    phone: string;
-    interest: string;
-    message: string;
-  }) => {
-    const { subject, body } = generateEmailContent(data);
-    return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(ORGANIZATION_EMAIL)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    const validation = validateConsultationForm({
+      name,
+      email,
+      company,
+      phone,
+      interest,
+      message,
+    });
+
+    if (!validation.isValid) {
+      setErrors(validation.errors as Record<string, string>);
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -164,7 +84,8 @@ Request Dispatched via HypenSec Consultation Dispatcher
 
     // Trigger user mail client with pre-filled content
     try {
-      triggerMailto(submission);
+      const mailtoUrl = getMailtoUrl(submission);
+      window.location.href = mailtoUrl;
     } catch {
       // Fallback handled smoothly
     }
@@ -177,12 +98,11 @@ Request Dispatched via HypenSec Consultation Dispatcher
 
   const handleCopyDetails = () => {
     if (!submittedData) return;
-    const { subject, body } = generateEmailContent(submittedData);
-    const fullText = `To: ${ORGANIZATION_EMAIL}\nSubject: ${subject}\n\n${body}`;
+    const { fullFormattedText } = generateEmailContent(submittedData);
 
     try {
       const textarea = document.createElement('textarea');
-      textarea.value = fullText;
+      textarea.value = fullFormattedText;
       textarea.setAttribute('readonly', '');
       textarea.style.position = 'fixed';
       textarea.style.opacity = '0';

@@ -3,11 +3,13 @@ import { Building2 } from 'lucide-react';
 import {
   CUSTOMER_LOGOS,
   CustomerLogoItem,
-  buildMarqueeTrack
+  buildMarqueeTrack,
+  CUSTOMER_CAROUSEL_TITLE
 } from '../../data/customerLogos';
 
 interface CustomerLogoCarouselProps {
   variant?: 'home' | 'customers';
+  title?: string;
   onSelectCustomerAction?: (customer: CustomerLogoItem) => void;
   onViewAllCustomers?: () => void;
 }
@@ -142,7 +144,9 @@ function processLogoToTransparentDataUrl(
   return canvas.toDataURL('image/png');
 }
 
-export const CustomerLogoCarousel: React.FC<CustomerLogoCarouselProps> = () => {
+export const CustomerLogoCarousel: React.FC<CustomerLogoCarouselProps> = ({
+  title = CUSTOMER_CAROUSEL_TITLE
+}) => {
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [transparentUrls, setTransparentUrls] = useState<Record<string, string>>({});
 
@@ -173,12 +177,21 @@ export const CustomerLogoCarousel: React.FC<CustomerLogoCarouselProps> = () => {
   const marqueeItems = buildMarqueeTrack(CUSTOMER_LOGOS, 2);
 
   return (
-    <div
-      aria-label="Our Customers Logo Carousel"
-      className="relative overflow-hidden py-4 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
-      data-testid="customer-logo-marquee"
-    >
-      <div className="animate-customer-marquee items-center">
+    <div className="w-full py-4 space-y-4">
+      {title && (
+        <div className="text-center px-4">
+          <p className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wider font-mono">
+            {title}
+          </p>
+        </div>
+      )}
+
+      <div
+        aria-label="Our Customers Logo Carousel"
+        className="relative overflow-hidden py-3 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]"
+        data-testid="customer-logo-marquee"
+      >
+        <div className="animate-customer-marquee items-center">
         {marqueeItems.map((customer, idx) => {
           const hasFailed = failedImages[customer.id];
           const resolvedSrc = transparentUrls[customer.id] || customer.logoUrl;
@@ -186,7 +199,7 @@ export const CustomerLogoCarousel: React.FC<CustomerLogoCarouselProps> = () => {
           return (
             <div
               key={`${customer.id}-${idx}`}
-              className="shrink-0 mx-8 sm:mx-12 h-20 w-40 sm:w-44 flex items-center justify-center transition-transform duration-200 hover:scale-105"
+              className="shrink-0 mx-4 sm:mx-6 h-16 sm:h-20 w-32 sm:w-36 flex items-center justify-center transition-transform duration-200 hover:scale-105"
             >
               {!hasFailed ? (
                 <img
@@ -211,5 +224,6 @@ export const CustomerLogoCarousel: React.FC<CustomerLogoCarouselProps> = () => {
         })}
       </div>
     </div>
+  </div>
   );
 };
